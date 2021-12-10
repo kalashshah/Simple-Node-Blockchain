@@ -44,15 +44,11 @@ class Chain {
     return this.chain[this.chain.length - 1];
   }
 
-  addBlock(
-    transaction: Transaction,
-    senderPublicKey: string,
-    signature: Buffer
-  ) {
+  addBlock(transaction: Transaction, signature: Buffer) {
     const verify = crypto.createVerify("SHA256");
     verify.update(transaction.toString());
     // Verify transaction using signature and public key
-    const isValid = verify.verify(senderPublicKey, signature);
+    const isValid = verify.verify(transaction.payer, signature);
     if (isValid) {
       const newBlock = new Block(this.lastBlock.hash, transaction);
       this.mine(newBlock.nonce);
@@ -102,7 +98,7 @@ class Wallet {
     const sign = crypto.createSign("SHA256");
     sign.update(transaction.toString()).end();
     const signature = sign.sign(this.privateKey);
-    Chain.instance.addBlock(transaction, this.publicKey, signature);
+    Chain.instance.addBlock(transaction, signature);
   };
 }
 
